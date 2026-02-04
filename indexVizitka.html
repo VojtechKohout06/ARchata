@@ -36,6 +36,8 @@
         renderer="logarithmicDepthBuffer: true;"
         embedded
         arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;"
+        gesture-detector
+        id="scene"
 >
   <!-- a-nft is the anchor that defines an Image Tracking entity -->
   <!-- on 'url' use the path to the Image Descriptors created before. -->
@@ -47,12 +49,17 @@
       smoothCount="13"
       smoothTolerance="0.3"
       smoothThreshold="10"
+      aycaster="objects: .clickable"
+      emitevents="true"
+      cursor="fuse: false; rayOrigin: mouse;"
   >
     <!-- as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity -->
     <a-entity
             gltf-model="models/table.glb"
             scale="0.5 0.5 0.5"
             position="0 0 0"
+            class="clickable"
+            gesture-handler="minScale: 0.25; maxScale: 10"
     >
     </a-entity>
   </a-nft>
@@ -60,3 +67,38 @@
   <a-entity camera></a-entity>
 </a-scene>
 </body></html>
+<script>
+  sceneEl.addEventListener("markerFound", (e) => {
+    isMarkerVisible = true;
+  });
+
+  sceneEl.addEventListener("markerLost", (e) => {
+      isMarkerVisible = false;
+  });
+
+  handleRotation(event) {
+    if (isMarkerVisible) {
+      el.object3D.rotation.y +=
+        event.detail.positionChange.x * rotationFactor;
+
+      el.object3D.rotation.x +=
+        event.detail.positionChange.y * rotationFactor;
+    }
+  }
+
+  handleScale(event) {
+    if (isMarkerVisible) {
+      this.scaleFactor *=
+        1 + event.detail.spreadChange / event.detail.startSpread;
+
+      this.scaleFactor = Math.min(
+        Math.max(this.scaleFactor, this.data.minScale),
+        this.data.maxScale
+      );
+
+      el.object3D.scale.x = scaleFactor * initialScale.x;
+      el.object3D.scale.y = scaleFactor * initialScale.y;
+      el.object3D.scale.z = scaleFactor * initialScale.z;
+    }
+  }
+</script>
