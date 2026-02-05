@@ -1,3 +1,4 @@
+<head>
 <!-- import aframe and then ar.js with image tracking / location based features -->
 <!-- <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script> -->
 
@@ -7,6 +8,24 @@
 <!-- Gestures handler and detector libraries -->
 <script src="js/gesture-detector.js"></script>
 <script src="js/gesture-handler.js"></script>
+
+<script>
+  AFRAME.registerComponent('freeze-on-found', {
+    init: function () {
+      this.el.addEventListener('markerFound', () => {
+        // This stops the jitter by preventing AR.js from 
+        // constantly updating the model's position 60 times a second.
+        this.el.object3D.matrixAutoUpdate = false;
+        this.el.object3D.visible = true;
+      });
+      this.el.addEventListener('markerLost', () => {
+        this.el.object3D.visible = false;
+      });
+    }
+  });
+</script>
+  
+</head>
 
 <!-- style for the loader -->
 <style>
@@ -37,89 +56,24 @@
 </div>
 
 <!-- a-frame scene -->
-<a-scene
-        vr-mode-ui="enabled: false;"
-        renderer="logarithmicDepthBuffer: true;"
-        embedded
-        arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;"
-        gesture-detector
-        id="scene"
->
-  <!-- a-nft is the anchor that defines an Image Tracking entity -->
-  <!-- on 'url' use the path to the Image Descriptors created before. -->
-  <!-- the path should end with the name without the extension e.g. if file is 'pinball.fset' the path should end with 'pinball' -->
+<a-scene ...>
   <a-nft
-    id="nftMarker"
     type="nft"
     url="ARchata/markers/vizitka"
     smooth="true"
-    smoothCount="10"
-    smoothTolerance="0.2"
-    smoothThreshold="2"
+    smoothCount="5" 
     emitevents="true"
+    freeze-on-found
   >
-    <!-- Model centered on the marker 
-    scale="4 4 4"
-      position="70 0 -130"-->
     <a-entity
-      id="model"
-      gltf-model="models/CHATA.glb"
-      scale="4 4 4"
-      position="70 0 -130"
-      class="clickable"
-      gesture-handler="rotationFactor: 5; minScale: 1; maxScale: 10"
+        gltf-model="models/CHATA.glb"
+        scale="4 4 4"
+        position="70 0 -130"
+        class="clickable"
+        gesture-handler
     >
     </a-entity>
   </a-nft>
-  
-  <!-- static camera that moves according to the device movemenents -->
   <a-entity camera></a-entity>
 </a-scene>
 </body></html>
-
-<script>
-  const marker = document.querySelector('#nftMarker');
-  const model = document.querySelector('#model');
-  const scene = document.querySelector('a-scene');
-
-  let isAnchored = false;
-
-  marker.addEventListener('markerFound', () => {
-    if (isAnchored) return;
-
-    // Force matrices to update
-    model.object3D.updateMatrixWorld(true);
-
-    // Get world transform
-    const worldPosition = new THREE.Vector3();
-    const worldQuaternion = new THREE.Quaternion();
-    const worldScale = new THREE.Vector3();
-
-    model.object3D.matrixWorld.decompose(
-      worldPosition,
-      worldQuaternion,
-      worldScale
-    );
-
-    // Detach from marker
-    marker.removeChild(model);
-    scene.appendChild(model);
-
-    // Apply frozen world transform
-    model.object3D.position.copy(worldPosition);
-    model.object3D.quaternion.copy(worldQuaternion);
-    model.object3D.scale.copy(worldScale);
-
-    model.setAttribute('visible', true);
-    isAnchored = true;
-  });
-
-  marker.addEventListener('markerLost', () => {
-    model.setAttribute('visible', false);
-    isAnchored = false;
-
-    // Optional: reattach so next detection recalculates
-    scene.removeChild(model);
-    marker.appendChild(model);
-  });
-</script>
