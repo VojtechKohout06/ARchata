@@ -1,73 +1,111 @@
-<!-- import aframe and then ar.js with image tracking / location based features -->
-<!-- <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script> -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>AR.js NFT – Place Once, Manipulate</title>
 
-<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <!-- A-Frame (stable, NFT-compatible) -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 
-<!-- Gestures handler and detector libraries -->
-<script src="js/gesture-detector.js"></script>
-<script src="js/gesture-handler.js"></script>
+    <!-- AR.js NFT -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
 
-<!-- style for the loader -->
-<style>
-  .arjs-loader {
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+    <!-- Gesture libs (self-host or jsDelivr recommended in real app) -->
+    <script src="https://cdn.jsdelivr.net/npm/aframe-gesture-detector-component@3.3.0/dist/aframe-gesture-detector-component.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-gesture-handler-component@3.3.0/dist/aframe-gesture-handler-component.min.js"></script>
 
-  .arjs-loader div {
-    text-align: center;
-    font-size: 1.25em;
-    color: white;
-  }
-</style>
+    <style>
+      .arjs-loader {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 1.25em;
+      }
+    </style>
+  </head>
 
-<body style="margin : 0px; overflow: hidden;">
-<!-- minimal loader shown until image descriptors are loaded. Loading may take a while according to the device computational power -->
-<div class="arjs-loader">
-  <div>Loading, please wait...</div>
-</div>
+  <body style="margin: 0; overflow: hidden">
+    <div class="arjs-loader">Loading marker…</div>
 
-<!-- a-frame scene -->
-<a-scene
-        vr-mode-ui="enabled: false;"
-        renderer="logarithmicDepthBuffer: true;"
-        embedded
-        arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;"
-        gesture-detector
-        id="scene"
->
-  <!-- a-nft is the anchor that defines an Image Tracking entity -->
-  <!-- on 'url' use the path to the Image Descriptors created before. -->
-  <!-- the path should end with the name without the extension e.g. if file is 'pinball.fset' the path should end with 'pinball' -->
-  <a-nft
-     type="nft"
-      url="ARchata/markers/vizitka"
-      smooth="true"
-      smoothCount="15"
-      smoothTolerance="0.5"
-      smoothThreshold="10"
-      emitevents="true"
-  >
-    <!-- as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity -->
-    <a-entity
-            gltf-model="models/CHATA.glb"
-            scale="5 5 5"
-            position="70 100 0"
-            class="clickable"
-            gesture-handler="rotationFactor: 5; minScale: 1; maxScale: 10"
+    <a-scene
+      embedded
+      vr-mode-ui="enabled: false"
+      renderer="logarithmicDepthBuffer: true"
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+      gesture-detector
     >
-    </a-entity>
-  </a-nft>
-  <!-- static camera that moves according to the device movemenents -->
-  <a-entity camera></a-entity>
-</a-scene>
-</body></html>
+
+      <!-- NFT marker = placement only -->
+      <a-nft
+        id="trex-marker"
+        type="nft"
+        url="https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/trex-image/trex"
+        smooth="true"
+        smoothCount="5"
+        smoothTolerance="0.08"
+        smoothThreshold="8"
+        emitevents="true"
+      ></a-nft>
+
+      <!-- WORLD SPACE (independent of marker) -->
+      <a-entity id="world">
+        <a-box
+          id="model"
+          color="red"
+          scale="0.5 0.5 0.5"
+          visible="false"
+          gesture-handler="
+            enabled: false;
+            rotationFactor: 5;
+            minScale: 0.3;
+            maxScale: 2;
+          ">
+        </a-box>
+      </a-entity>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+      const marker = document.getElementById("trex-marker");
+      const model = document.getElementById("model");
+
+      let placed = false;
+
+      marker.addEventListener("markerFound", () => {
+        if (placed) return;
+
+        // Ensure world matrices are correct
+        marker.object3D.updateMatrixWorld(true);
+
+        // Copy marker world transform to model
+        model.object3D.matrix.copy(marker.object3D.matrixWorld);
+        model.object3D.matrix.decompose(
+          model.object3D.position,
+          model.object3D.quaternion,
+          model.object3D.scale
+        );
+
+        model.setAttribute("visible", true);
+        model.setAttribute("gesture-handler", "enabled: true");
+
+        // Optional: stop marker updates after placement
+        marker.pause();
+
+        placed = true;
+      });
+
+      marker.addEventListener("loaded", () => {
+        document.querySelector(".arjs-loader").style.display = "none";
+      });
+    </script>
+  </body>
+</html>
