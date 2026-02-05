@@ -72,3 +72,22 @@
   <a-entity camera></a-entity>
 </a-scene>
 </body></html>
+
+<script>
+const marker = document.querySelector('#marker');
+const model = document.querySelector('#static-model');
+
+marker.addEventListener('markerFound', () => {
+  // Make model visible
+  model.setAttribute('visible', 'true');
+  // Reparent to scene to stop following the marker
+  document.querySelector('a-scene').appendChild(model);
+  // Center in front of camera
+  model.setAttribute('position', '0 0 -2');
+});
+
+marker.addEventListener('markerLost', () => {
+  // Hide model when marker is not visible
+  model.setAttribute('visible', 'false');
+});
+</script>
