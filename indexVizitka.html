@@ -49,9 +49,9 @@
         type="nft"
         url="https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/trex-image/trex"
         smooth="true"
-        smoothCount="5"
-        smoothTolerance="0.08"
-        smoothThreshold="8"
+        smoothCount="15"
+        smoothTolerance="0.8"
+        smoothThreshold="15"
         emitevents="true"
       ></a-nft>
 
@@ -61,11 +61,12 @@
           id="model"
           color="red"
           scale="0.5 0.5 0.5"
+          position="0 100 -50"
           visible="false"
           gesture-handler="
             enabled: false;
             rotationFactor: 5;
-            minScale: 0.3;
+            minScale: 0.1;
             maxScale: 2;
           ">
         </a-box>
