@@ -49,6 +49,7 @@
   <!-- on 'url' use the path to the Image Descriptors created before. -->
   <!-- the path should end with the name without the extension e.g. if file is 'pinball.fset' the path should end with 'pinball' -->
   <a-nft
+    id="nftMarker"
     type="nft"
     url="ARchata/markers/vizitka"
     smooth="true"
@@ -59,11 +60,12 @@
   >
     <!-- Model centered on the marker -->
     <a-entity
-        gltf-model="models/CHATA.glb"
-        scale="4 4 4"
-        position="70 0 -130"
-        class="clickable"
-        gesture-handler="rotationFactor: 5; minScale: 1; maxScale: 10"
+      id="model"
+      gltf-model="models/CHATA.glb"
+      scale="4 4 4"
+      position="70 0 -130"
+      class="clickable"
+      gesture-handler="rotationFactor: 5; minScale: 1; maxScale: 10"
     >
     </a-entity>
   </a-nft>
@@ -72,3 +74,50 @@
   <a-entity camera></a-entity>
 </a-scene>
 </body></html>
+
+<script>
+  const marker = document.querySelector('#nftMarker');
+  const model = document.querySelector('#model');
+  const scene = document.querySelector('a-scene');
+
+  let isAnchored = false;
+
+  marker.addEventListener('markerFound', () => {
+    if (isAnchored) return;
+
+    // Force matrices to update
+    model.object3D.updateMatrixWorld(true);
+
+    // Get world transform
+    const worldPosition = new THREE.Vector3();
+    const worldQuaternion = new THREE.Quaternion();
+    const worldScale = new THREE.Vector3();
+
+    model.object3D.matrixWorld.decompose(
+      worldPosition,
+      worldQuaternion,
+      worldScale
+    );
+
+    // Detach from marker
+    marker.removeChild(model);
+    scene.appendChild(model);
+
+    // Apply frozen world transform
+    model.object3D.position.copy(worldPosition);
+    model.object3D.quaternion.copy(worldQuaternion);
+    model.object3D.scale.copy(worldScale);
+
+    model.setAttribute('visible', true);
+    isAnchored = true;
+  });
+
+  marker.addEventListener('markerLost', () => {
+    model.setAttribute('visible', false);
+    isAnchored = false;
+
+    // Optional: reattach so next detection recalculates
+    scene.removeChild(model);
+    marker.appendChild(model);
+  });
+</script>
