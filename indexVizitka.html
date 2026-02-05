@@ -49,25 +49,24 @@
   <!-- on 'url' use the path to the Image Descriptors created before. -->
   <!-- the path should end with the name without the extension e.g. if file is 'pinball.fset' the path should end with 'pinball' -->
   <a-nft
-     type="nft"
-      url="ARchata/markers/vizitka"
-      smooth="true"
-      smoothCount="25"
-      smoothTolerance="15"
-      smoothThreshold="20"
-      emitevents="true"
+    type="nft"
+    url="ARchata/markers/vizitka"
+    smooth="true"
+    smoothCount="25"
+    smoothTolerance="15"
+    smoothThreshold="20"
+    emitevents="true"
   >
-  </a-nft>
-
-  <!-- as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity -->
+    <!-- Model centered on the marker -->
     <a-entity
-            gltf-model="models/CHATA.glb"
-            scale="1 1 1"
-            position="70 70 0"
-            class="clickable"
-            gesture-handler="rotationFactor: 5; minScale: 1; maxScale: 10"
+        gltf-model="models/CHATA.glb"
+        scale="1 1 1"
+        position="0 0 0"
+        class="clickable"
+        gesture-handler="rotationFactor: 5; minScale: 1; maxScale: 10"
     >
     </a-entity>
+  </a-nft>
   
   <!-- static camera that moves according to the device movemenents -->
   <a-entity camera></a-entity>
